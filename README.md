@@ -1,4 +1,4 @@
-# Process Flow Diagrams Wiki
+# Process Flow Diagrams Training
 
 
 ## Grant Agreements 
