@@ -2,11 +2,8 @@
 
 View the stylized [webpage]( https://meadecarb.github.io/Training/)
 
-## FOA Process Flow Diagram
+## FOA
 
-![FOA Process Flow Diagram](foa_process_flow.png)
-
-For an interactive version of this diagram, [click here](https://meadecarb.github.io/Training/).
 ## Recommendation Memos 
 [Rec Memos](https://github.com/MEADecarb/Training/blob/main/Rec_Memos.drawio.pdf) are a summary of the Grant Program, the applications, and the review process. The Rec Memo documents the reasons why an award should be made and the amount. The Rec Memo also provides the first estimation of the impact of the program. The Grant Program Review Team makes the recommendation to the MEA Director who approves the awards. 
 
