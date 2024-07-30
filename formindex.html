@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit New PFD</title>
+</head>
+<body>
+    <h1>Submit a New PFD</h1>
+    <form action="https://formspree.io/YOUR_FORM_ID" method="POST" enctype="multipart/form-data">
+        <label for="header">Header:</label><br>
+        <input type="text" id="header" name="header" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="pfd_image">Upload PFD Image:</label><br>
+        <input type="file" id="pfd_image" name="pfd_image" accept="image/png, image/jpeg" required><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
