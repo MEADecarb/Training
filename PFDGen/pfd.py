@@ -7,7 +7,7 @@ def main():
 
     # Sidebar navigation
     st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Home", "Instructions"])
+    page = st.sidebar.radio("Go to", ["PFD Generator", "Instructions"])
 
     if page == "Instructions":
         instructions()
@@ -69,10 +69,11 @@ def main():
 
         # Export functionality
         st.sidebar.header("Export Diagram")
+        file_name = st.sidebar.text_input("Enter file name", "process_flow_diagram")
         if st.sidebar.button("Export as PNG"):
             dot.format = 'png'
-            dot.render('process_flow_diagram', view=True)
-            st.sidebar.write("Diagram exported as process_flow_diagram.png")
+            dot.render(file_name, view=True)
+            st.sidebar.write(f"Diagram exported as {file_name}.png")
 
 if __name__ == "__main__":
     main()
