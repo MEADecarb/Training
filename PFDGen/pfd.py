@@ -1,139 +1,70 @@
-import dash
-from dash import dcc, html, Input, Output, State
-import plotly.graph_objs as go
+import streamlit as st
+import graphviz
 
-# Initialize the Dash app
-app = dash.Dash(__name__)
+def main():
+    st.title("Advanced Process Flow Diagram Generator")
 
-# Define the app layout
-app.layout = html.Div([
-    html.H1("Interactive Process Flow Diagram Generator"),
+    # Sidebar inputs for role definitions
+    st.sidebar.header("Define Roles")
+    num_roles = st.sidebar.number_input("Number of Roles", min_value=1, max_value=10, value=3, step=1)
 
-    # Role Definition
-    html.Div([
-        html.H3("Define Roles"),
-        dcc.Input(id='role-name', type='text', placeholder='Role Name', debounce=True),
-        dcc.Input(id='role-color', type='color', placeholder='Role Color', value='#ff0000'),
-        dcc.Dropdown(
-            id='role-shape',
-            options=[
-                {'label': 'Ellipse', 'value': 'ellipse'},
-                {'label': 'Box', 'value': 'box'},
-                {'label': 'Diamond', 'value': 'diamond'},
-                {'label': 'Circle', 'value': 'circle'},
-                {'label': 'Hexagon', 'value': 'hexagon'}
-            ],
-            placeholder='Select Shape'
-        ),
-        html.Button('Add Role', id='add-role', n_clicks=0),
-        html.Div(id='role-output'),
-    ], style={'margin-bottom': '20px'}),
+    roles = {}
+    for i in range(num_roles):
+        role_name = st.sidebar.text_input(f"Role {i+1} Name", f"Role {i+1}")
+        role_color = st.sidebar.color_picker(f"Role {i+1} Color", "#ff0000", key=f"role_color_{i}")
+        role_shape = st.sidebar.selectbox(f"Role {i+1} Shape", ["ellipse", "box", "diamond", "circle", "hexagon"], key=f"role_shape_{i}")
+        roles[role_name] = {"color": role_color, "shape": role_shape}
 
-    # Process Flow Definition
-    html.Div([
-        html.H3("Define Process Flow"),
-        dcc.Input(id='step-name', type='text', placeholder='Step Name', debounce=True),
-        dcc.Dropdown(
-            id='step-role',
-            options=[],
-            placeholder='Select Role'
-        ),
-        dcc.Dropdown(
-            id='step-orientation',
-            options=[
-                {'label': 'Left to Right', 'value': 'LR'},
-                {'label': 'Top to Bottom', 'value': 'TB'},
-                {'label': 'Bottom to Top', 'value': 'BT'},
-                {'label': 'Right to Left', 'value': 'RL'}
-            ],
-            placeholder='Select Orientation'
-        ),
-        html.Button('Add Step', id='add-step', n_clicks=0),
-        html.Div(id='steps-output')
-    ], style={'margin-bottom': '20px'}),
+    # Sidebar inputs for process flow
+    st.sidebar.header("Define Your Process")
+    num_steps = st.sidebar.number_input("Number of Main Steps", min_value=2, max_value=10, value=3, step=1)
 
-    # Graph Output
-    html.Div([
-        dcc.Graph(id='process-flow-graph')
-    ])
-])
+    process_steps = []
+    for i in range(num_steps):
+        step = st.sidebar.text_input(f"Main Step {i+1} Name", f"Step {i+1}")
+        role = st.sidebar.selectbox(f"Main Step {i+1} Role", list(roles.keys()), key=f"role_{i}")
+        orientation = st.sidebar.selectbox(f"Orientation to Next Step", ["left to right", "top to bottom", "bottom to top", "right to left"], key=f"orientation_{i}")
+        num_sub_steps = st.sidebar.number_input(f"Number of Sub-Steps under Main Step {i+1}", min_value=0, max_value=5, value=0, step=1, key=f"num_sub_{i}")
+        sub_steps = []
+        for j in range(num_sub_steps):
+            sub_step = st.sidebar.text_input(f"Sub-Step {j+1} under Main Step {i+1} Name", f"Sub-Step {i+1}.{j+1}", key=f"sub_step_{i}_{j}")
+            sub_role = st.sidebar.selectbox(f"Sub-Step {j+1} Role", list(roles.keys()), key=f"sub_role_{i}_{j}")
+            sub_steps.append((sub_step, sub_role))
+        
+        process_steps.append((step, role, orientation, sub_steps))
 
-# Store roles and steps in memory
-roles = []
-steps = []
+    # Create a Graphviz graph object
+    dot = graphviz.Digraph()
 
-@app.callback(
-    Output('role-output', 'children'),
-    Input('add-role', 'n_clicks'),
-    State('role-name', 'value'),
-    State('role-color', 'value'),
-    State('role-shape', 'value')
-)
-def add_role(n_clicks, role_name, role_color, role_shape):
-    if n_clicks > 0 and role_name and role_color and role_shape:
-        role = {'name': role_name, 'color': role_color, 'shape': role_shape}
-        roles.append(role)
-        return f"Role {role_name} added with color {role_color} and shape {role_shape}"
+    # Add nodes and edges to the graph
+    for i, (step_name, role, orientation, sub_steps) in enumerate(process_steps):
+        role_attrs = roles[role]
+        dot.node(f'Step{i+1}', step_name, color=role_attrs["color"], shape=role_attrs["shape"], style="filled", fillcolor=role_attrs["color"])
+        if i > 0:
+            if orientation == "left to right":
+                dot.edge(f'Step{i}', f'Step{i+1}', dir="forward")
+            elif orientation == "top to bottom":
+                dot.edge(f'Step{i}', f'Step{i+1}', dir="forward", constraint="false")
+            elif orientation == "bottom to top":
+                dot.edge(f'Step{i+1}', f'Step{i}', dir="forward", constraint="false")
+            elif orientation == "right to left":
+                dot.edge(f'Step{i+1}', f'Step{i}', dir="forward")
+        
+        for j, (sub_step_name, sub_role) in enumerate(sub_steps):
+            sub_role_attrs = roles[sub_role]
+            dot.node(f'Step{i+1}.{j+1}', sub_step_name, color=sub_role_attrs["color"], shape=sub_role_attrs["shape"], style="filled", fillcolor=sub_role_attrs["color"])
+            dot.edge(f'Step{i+1}', f'Step{i+1}.{j+1}', dir="forward")
 
-@app.callback(
-    Output('step-role', 'options'),
-    Input('role-output', 'children')
-)
-def update_role_dropdown(role_output):
-    return [{'label': role['name'], 'value': role['name']} for role in roles]
+    # Render the Graphviz graph
+    st.subheader("Generated Process Flow Diagram")
+    st.graphviz_chart(dot)
 
-@app.callback(
-    Output('steps-output', 'children'),
-    Output('process-flow-graph', 'figure'),
-    Input('add-step', 'n_clicks'),
-    State('step-name', 'value'),
-    State('step-role', 'value'),
-    State('step-orientation', 'value')
-)
-def add_step(n_clicks, step_name, step_role, step_orientation):
-    if n_clicks > 0 and step_name and step_role and step_orientation:
-        step = {'name': step_name, 'role': step_role, 'orientation': step_orientation}
-        steps.append(step)
+    # Export functionality
+    st.sidebar.header("Export Diagram")
+    if st.sidebar.button("Export as PNG"):
+        dot.format = 'png'
+        dot.render('process_flow_diagram', view=True)
+        st.sidebar.write("Diagram exported as process_flow_diagram.png")
 
-    # Create nodes and edges for the graph
-    nodes = []
-    edges = []
-    positions = {
-        'LR': (1, 0),
-        'TB': (0, 1),
-        'BT': (0, -1),
-        'RL': (-1, 0)
-    }
-    x, y = 0, 0
-
-    for step in steps:
-        role = next(role for role in roles if role['name'] == step['role'])
-        nodes.append(go.Scatter(
-            x=[x], y=[y],
-            text=step['name'],
-            mode='markers+text',
-            marker=dict(size=20, color=role['color'], symbol=role['shape']),
-            textposition='bottom center'
-        ))
-        if len(nodes) > 1:
-            prev_x, prev_y = nodes[-2]['x'][0], nodes[-2]['y'][0]
-            edge_x = [prev_x, x]
-            edge_y = [prev_y, y]
-            edges.append(go.Scatter(
-                x=edge_x, y=edge_y,
-                mode='lines',
-                line=dict(color='black')
-            ))
-        dx, dy = positions[step['orientation']]
-        x += dx * 2
-        y += dy * 2
-
-    figure = go.Figure(data=nodes + edges)
-    figure.update_layout(showlegend=False)
-
-    steps_output = f"Step {step_name} added as {step_role} with orientation {step_orientation}"
-    return steps_output, figure
-
-# Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
+if __name__ == "__main__":
+    main()
