@@ -6,7 +6,7 @@ View the stylized [webpage](https://meadecarb.github.io/Training/)
 Generate your own Process Flow Diagrams [PFD Generator](https://processflowgenerator.streamlit.app/)
 
 ## Funding Opportunities Announcement
-![FOAs](https://raw.githubusercontent.com/MEADecarb/Training/main/foa_process_flow.jpg)
+[![FOAs](https://raw.githubusercontent.com/MEADecarb/Training/main/foa_process_flow.jpg)](https://raw.githubusercontent.com/MEADecarb/Training/main/foa_process_flow.jpg)
 
 FOAs are a public notice issued by MEA to announce the availability of funding for specific projects or programs. The FOA provides detailed information about the funding opportunity, including the purpose, eligibility criteria, application process, deadlines, and evaluation criteria.
 
