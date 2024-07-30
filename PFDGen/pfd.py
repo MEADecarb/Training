@@ -23,6 +23,7 @@ def main():
     for i in range(num_steps):
         step = st.sidebar.text_input(f"Main Step {i+1} Name", f"Step {i+1}")
         role = st.sidebar.selectbox(f"Main Step {i+1} Role", list(roles.keys()), key=f"role_{i}")
+        orientation = st.sidebar.selectbox(f"Orientation to Next Step", ["left to right", "top to bottom", "bottom to top", "right to left"], key=f"orientation_{i}")
         num_sub_steps = st.sidebar.number_input(f"Number of Sub-Steps under Main Step {i+1}", min_value=0, max_value=5, value=0, step=1, key=f"num_sub_{i}")
         sub_steps = []
         for j in range(num_sub_steps):
@@ -30,22 +31,29 @@ def main():
             sub_role = st.sidebar.selectbox(f"Sub-Step {j+1} Role", list(roles.keys()), key=f"sub_role_{i}_{j}")
             sub_steps.append((sub_step, sub_role))
         
-        process_steps.append((step, role, sub_steps))
+        process_steps.append((step, role, orientation, sub_steps))
 
     # Create a Graphviz graph object
     dot = graphviz.Digraph()
 
     # Add nodes and edges to the graph
-    for i, (step_name, role, sub_steps) in enumerate(process_steps):
+    for i, (step_name, role, orientation, sub_steps) in enumerate(process_steps):
         role_attrs = roles[role]
         dot.node(f'Step{i+1}', step_name, color=role_attrs["color"], shape=role_attrs["shape"], style="filled", fillcolor=role_attrs["color"])
         if i > 0:
-            dot.edge(f'Step{i}', f'Step{i+1}')
+            if orientation == "left to right":
+                dot.edge(f'Step{i}', f'Step{i+1}', dir="forward")
+            elif orientation == "top to bottom":
+                dot.edge(f'Step{i}', f'Step{i+1}', dir="forward", constraint="false")
+            elif orientation == "bottom to top":
+                dot.edge(f'Step{i+1}', f'Step{i}', dir="forward", constraint="false")
+            elif orientation == "right to left":
+                dot.edge(f'Step{i+1}', f'Step{i}', dir="forward")
         
         for j, (sub_step_name, sub_role) in enumerate(sub_steps):
             sub_role_attrs = roles[sub_role]
             dot.node(f'Step{i+1}.{j+1}', sub_step_name, color=sub_role_attrs["color"], shape=sub_role_attrs["shape"], style="filled", fillcolor=sub_role_attrs["color"])
-            dot.edge(f'Step{i+1}', f'Step{i+1}.{j+1}')
+            dot.edge(f'Step{i+1}', f'Step{i+1}.{j+1}', dir="forward")
 
     # Render the Graphviz graph
     st.subheader("Generated Process Flow Diagram")
