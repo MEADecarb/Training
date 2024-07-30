@@ -27,8 +27,8 @@ def instructions():
 
     st.subheader("4. Export Diagram")
     st.write("""
-    - If you wish to save the diagram, click the 'Export as PNG' button in the sidebar.
-    - The diagram will be saved as a PNG file and a link to view it will be provided.
+    - If you wish to save the diagram, enter a file name and click the 'Export as PNG' button in the sidebar.
+    - The diagram will be saved as a PNG file with the provided file name.
     """)
 
 if __name__ == "__main__":
